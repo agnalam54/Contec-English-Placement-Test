@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Examiner Portal - CONTEC Placement</title>
+  <style>
+    :root { --primary: #1e3a8a; --secondary: #0f766e; --bg: #f8fafc; --card: #ffffff; --border: #cbd5e1; --text: #0f172a; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
+    body { background: var(--bg); color: var(--text); padding: 20px; }
+    .container { max-width: 1000px; margin: 0 auto; }
+    .card { background: var(--card); border: 1px solid var(--border); padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+    th, td { border: 1px solid var(--border); padding: 10px; text-align: left; }
+    th { background: #f1f5f9; }
+    tr.clickable:hover { background: #f8fafc; cursor: pointer; }
+    .badge { padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; }
+    .status-pending { background: #fef3c7; color: #92400e; }
+    .status-completed { background: #dcfce7; color: #166534; }
+    .btn { padding: 8px 16px; background: var(--primary); color: #fff; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 10px; }
+    select, textarea { width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px; margin-top: 4px; }
+    .syllabus-box { background: #eff6ff; border: 1px solid #bfdbfe; padding: 14px; border-radius: 6px; margin-top: 14px; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+
+  <div class="card">
+    <div class="header">
+      <h2 style="color: var(--primary);">Examiner Evaluation Dashboard</h2>
+      <button class="btn" onclick="loadSubmissions()">🔄 Refresh Submissions</button>
+    </div>
+    
+    <table>
+      <thead>
+        <tr>
+          <th>Student Name</th>
+          <th>Dept</th>
+          <th>Reading (5)</th>
+          <th>Listening (14)</th>
+          <th>Writing (6)</th>
+          <th>Speaking (15)</th>
+          <th>Total (40)</th>
+          <th>Level</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="candidateRows">
+        <tr><td colspan="9" style="text-align:center;">Loading submissions...</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Grading Panel -->
+  <div id="gradingPanel" class="card" style="display:none; border-top: 5px solid var(--secondary);">
+    <h3 style="color: var(--secondary); margin-bottom: 12px;">Candidate Assessment: <span id="evalName"></span></h3>
+    
+    <div style="background: #f8fafc; border: 1px solid var(--border); padding: 12px; border-radius: 6px; margin-bottom: 16px;">
+      <strong>Student Written Response:</strong>
+      <p id="evalWritingText" style="margin-top: 6px; font-style: italic; white-space: pre-wrap;"></p>
+    </div>
+
+    <div class="grid-2">
+      <div>
+        <label><strong>Writing Evaluation (0-6 pts):</strong></label>
+        <select id="evalWritingScore">
+          <option value="0">0 - Off-topic / Unintelligible</option>
+          <option value="1">1 - Severe syntactic breakdown (A1)</option>
+          <option value="2">2 - Basic sentences, frequent errors (A1/A2)</option>
+          <option value="3">3 - Comprehensible routine phrasing (A2)</option>
+          <option value="4">4 - Good cohesive structure, minor errors (B1)</option>
+          <option value="5">5 - Clear, professional workplace register (B2)</option>
+          <option value="6">6 - Fluent, precise vocabulary and syntax (C1)</option>
+        </select>
+      </div>
+
+      <div>
+        <label><strong>Speaking Oral Evaluation (0-15 pts):</strong></label>
+        <select id="evalSpeakingScore">
+          <option value="3">3 - A1: Minimal words / Significant pauses</option>
+          <option value="6">6 - A2: Simple phrases / Basic daily interactions</option>
+          <option value="9">9 - B1: Connected discourse / Work conversations</option>
+          <option value="12">12 - B2: Fluent / Confident technical discussions</option>
+          <option value="15">15 - C1: Spontaneous / Sophisticated professional range</option>
+        </select>
+      </div>
+    </div>
+
+    <button class="btn" style="background: var(--secondary); margin-top: 16px; width: 100%;" onclick="submitGrades()">Finalize Assessment & Update Syllabus</button>
+
+    <div id="syllabusResult" class="syllabus-box" style="display:none;">
+      <h4 style="color: var(--primary);">Assigned Level: <span id="resLevel"></span> (<span id="resScore"></span>/40)</h4>
+      <p><strong>Target Syllabus Modules:</strong></p>
+      <ul id="resSyllabusList" style="margin-left: 20px; margin-top: 6px;"></ul>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // PASTE YOUR DEPLOYED GOOGLE APPS SCRIPT WEB APP URL HERE
+  const SCRIPT_URL = "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE";
+
+  let candidates = [];
+  let activeCandidate = null;
+
+  const SYLLABUS = {
+    'A1': ['Grammar: Present simple routines & basic pronouns', 'Speaking: Introductions & job roles', 'Listening: Simple factual workplace phrases'],
+    'A2': ['Grammar: Past simple vs Present perfect', 'Speaking: Handling routine check-ins & operational updates', 'Reading: Short instructions and memos'],
+    'B1': ['Grammar: Conditionals (1st & 2nd) & passive voice', 'Speaking: Defending opinions in team meetings', 'Writing: Paragraph emails & status summaries'],
+    'B2': ['Grammar: Complex modal deductions & transitions', 'Speaking: Leading discussions & negotiations', 'Listening: Technical briefings & multiple accents'],
+    'C1': ['Grammar: Syntactic inversion & advanced discourse markers', 'Speaking: High-stakes presentations & executive strategy', 'Reading: Critical regulatory & technical analysis']
+  };
+
+  async function loadSubmissions() {
+    try {
+      const res = await fetch(SCRIPT_URL);
+      const data = await res.json();
+      candidates = data.records;
+      renderTable();
+    } catch (err) {
+      alert("Failed to load records from backend.");
+    }
+  }
+
+  function renderTable() {
+    const tbody = document.getElementById('candidateRows');
+    tbody.innerHTML = '';
+
+    if (!candidates || candidates.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;">No submissions received yet.</td></tr>';
+      return;
+    }
+
+    candidates.forEach(c => {
+      const tr = document.createElement('tr');
+      tr.className = 'clickable';
+      tr.onclick = () => openEvaluation(c.id);
+      tr.innerHTML = `
+        <td><strong>${c.fullName}</strong></td>
+        <td>${c.department}</td>
+        <td>${c.readingScore}</td>
+        <td>${c.listeningScore}</td>
+        <td>${c.writingScore !== "" ? c.writingScore : "-"}</td>
+        <td>${c.speakingScore !== "" ? c.speakingScore : "-"}</td>
+        <td><strong>${c.totalScore !== "" ? c.totalScore : "-"}</strong></td>
+        <td><span class="badge" style="background:#1e3a8a; color:#fff;">${c.cefrLevel || "-"}</span></td>
+        <td><span class="badge ${c.status === 'Completed' ? 'status-completed' : 'status-pending'}">${c.status}</span></td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function openEvaluation(id) {
+    activeCandidate = candidates.find(c => c.id === id);
+    if (!activeCandidate) return;
+
+    document.getElementById('gradingPanel').style.display = 'block';
+    document.getElementById('evalName').innerText = `${activeCandidate.fullName} (${activeCandidate.department})`;
+    document.getElementById('evalWritingText').innerText = activeCandidate.writingText || "(No writing submission provided)";
+    
+    if (activeCandidate.writingScore !== "") document.getElementById('evalWritingScore').value = activeCandidate.writingScore;
+    if (activeCandidate.speakingScore !== "") document.getElementById('evalSpeakingScore').value = activeCandidate.speakingScore;
+
+    document.getElementById('syllabusResult').style.display = 'none';
+    document.getElementById('gradingPanel').scrollIntoView({ behavior: 'smooth' });
+  }
+
+  async function submitGrades() {
+    if (!activeCandidate) return;
+
+    const payload = {
+      action: "EXAMINER_GRADE",
+      id: activeCandidate.id,
+      writingScore: document.getElementById('evalWritingScore').value,
+      speakingScore: document.getElementById('evalSpeakingScore').value
+    };
+
+    try {
+      const res = await fetch(SCRIPT_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+
+      if (data.status === 'success') {
+        document.getElementById('syllabusResult').style.display = 'block';
+        document.getElementById('resLevel').innerText = `Level ${data.cefr}`;
+        document.getElementById('resScore').innerText = data.total;
+
+        const ul = document.getElementById('resSyllabusList');
+        ul.innerHTML = '';
+        (SYLLABUS[data.cefr] || []).forEach(m => {
+          const li = document.createElement('li');
+          li.innerText = m;
+          ul.appendChild(li);
+        });
+
+        loadSubmissions();
+      }
+    } catch (err) {
+      alert("Failed to submit grades.");
+    }
+  }
+
+  loadSubmissions();
+</script>
+</body>
+</html>
