@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Examiner Portal - CONTEC Placement Assessment</title>
+  <title>Examiner Portal - CONTEC Placement</title>
   <style>
     :root { --primary: #1e3a8a; --secondary: #0f766e; --bg: #f8fafc; --card: #ffffff; --border: #cbd5e1; --text: #0f172a; }
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
@@ -101,7 +101,7 @@
 </div>
 
 <script>
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwDoQenLdbe_hE1FC407BUqPt38F_P40brPua3I_fPuVPQkf310oOQHQtX65bPhIVnj/exec";
+  const SCRIPT_URL = "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE";
 
   let candidates = [];
   let activeCandidate = null;
@@ -115,13 +115,26 @@
   };
 
   async function loadSubmissions() {
+    const tbody = document.getElementById('candidateRows');
+    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;">Loading submissions...</td></tr>';
+
     try {
-      const res = await fetch(SCRIPT_URL);
+      const res = await fetch(SCRIPT_URL, {
+        method: "GET",
+        redirect: "follow"
+      });
+      
+      if (!res.ok) {
+        throw new Error(`HTTP status ${res.status}`);
+      }
+      
       const data = await res.json();
-      candidates = data.records;
+      candidates = data.records || [];
       renderTable();
     } catch (err) {
-      alert("Failed to load records from backend.");
+      console.error("Fetch Error:", err);
+      tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; color:#dc2626;">Error connecting to Google Sheets: ${err.message}</td></tr>`;
+      alert("Connection Error: " + err.message + "\nCheck browser console for details.");
     }
   }
 
@@ -130,7 +143,7 @@
     tbody.innerHTML = '';
 
     if (!candidates || candidates.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;">No submissions received yet.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; color:#64748b;">No submissions received yet.</td></tr>';
       return;
     }
 
@@ -181,7 +194,7 @@
     try {
       const res = await fetch(SCRIPT_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
         body: JSON.stringify(payload)
       });
       const data = await res.json();
@@ -200,12 +213,15 @@
         });
 
         loadSubmissions();
+      } else {
+        alert("Grading failed: " + data.message);
       }
     } catch (err) {
-      alert("Failed to submit grades.");
+      alert("Failed to submit grades. Please check connection.");
     }
   }
 
+  // Auto-load records upon opening
   loadSubmissions();
 </script>
 </body>
