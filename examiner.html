@@ -1,52 +1,112 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Examiner Portal - CONTEC Placement</title>
-  <style>
-    :root { --primary: #1e3a8a; --secondary: #0f766e; --bg: #f8fafc; --card: #ffffff; --border: #cbd5e1; --text: #0f172a; }
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
-    body { background: var(--bg); color: var(--text); padding: 20px; }
-    .container { max-width: 1000px; margin: 0 auto; }
-    .card { background: var(--card); border: 1px solid var(--border); padding: 20px; border-radius: 8px; margin-bottom: 20px; }
-    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; }
-    table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
-    th, td { border: 1px solid var(--border); padding: 10px; text-align: left; }
-    th { background: #f1f5f9; }
-    tr.clickable:hover { background: #f8fafc; cursor: pointer; }
-    .badge { padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; }
-    .status-pending { background: #fef3c7; color: #92400e; }
-    .status-completed { background: #dcfce7; color: #166534; }
-    .btn { padding: 8px 16px; background: var(--primary); color: #fff; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; }
-    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 10px; }
-    select, textarea { width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px; margin-top: 4px; }
-    .syllabus-box { background: #eff6ff; border: 1px solid #bfdbfe; padding: 14px; border-radius: 6px; margin-top: 14px; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Examiner Portal - CONTEC Placement</title>
+<style>
+  :root {
+    --navy: #0b1f4d; --navy-dark: #071433; --navy-tint: #eef1fa;
+    --yellow: #ffc700; --white: #ffffff; --black: #111318;
+    --gray-100: #f5f6fa; --gray-200: #e3e7ef; --gray-500: #6b7280;
+    --red: #dc2626; --green: #15803d;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
+  body { background: var(--gray-100); color: var(--black); padding: 20px; }
+  .container { max-width: 1040px; margin: 0 auto; }
+  .card { background: var(--white); border: 1px solid var(--gray-200); padding: 20px; border-radius: 16px; margin-bottom: 20px; }
+  .header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; border-bottom: 2px solid var(--gray-200); padding-bottom: 12px; }
+  .header-actions { display: flex; gap: 8px; }
+  .brand { display: flex; align-items: center; gap: 10px; }
+  .brand-badge { width: 30px; height: 30px; background: var(--white); color: #2259ff; border: 2px solid var(--navy); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 800; flex-shrink: 0; }
+  .header h2 { color: var(--navy); font-size: 1.15rem; }
+
+  #loginScreen { max-width: 380px; margin: 60px auto; }
+
+  .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 0 -4px; }
+  table { width: 100%; min-width: 640px; border-collapse: collapse; font-size: 0.88rem; }
+  th, td { border: 1px solid var(--gray-200); padding: 10px; text-align: left; }
+  th { background: var(--navy-tint); color: var(--navy); font-weight: 700; }
+  tr.clickable:hover { background: var(--navy-tint); cursor: pointer; }
+  .badge { padding: 4px 9px; border-radius: 99px; font-size: 0.75rem; font-weight: 800; }
+  .status-pending { background: #fef3c7; color: #92400e; }
+  .status-completed { background: #dcfce7; color: var(--green); }
+  .level-badge { background: var(--navy); color: var(--white); }
+
+  .btn { padding: 10px 18px; background: var(--yellow); color: var(--navy); border: none; border-radius: 99px; font-weight: 800; cursor: pointer; font-size: 0.85rem; }
+  .btn-muted { background: var(--gray-200); color: var(--navy); }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 10px; }
+  @media (max-width: 600px) { .grid-2 { grid-template-columns: 1fr; } }
+  select, textarea, input[type="password"] { width: 100%; padding: 10px; border: 2px solid var(--gray-200); border-radius: 10px; margin-top: 4px; font-size: 0.9rem; }
+  select:focus, textarea:focus, input:focus { outline: none; border-color: var(--navy); }
+  .syllabus-box { background: var(--navy-tint); border: 1px solid #c7d3ef; padding: 14px; border-radius: 10px; margin-top: 14px; }
+
+  .skill-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 14px; }
+  @media (max-width: 500px) { .skill-grid { grid-template-columns: 1fr; } }
+  .skill-card { background: var(--white); border: 1px solid var(--gray-200); border-radius: 10px; padding: 10px 12px; }
+  .skill-card-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .skill-card-name { font-size: 0.85rem; font-weight: 700; color: var(--navy); }
+  .skill-band-badge { font-size: 0.72rem; font-weight: 800; padding: 2px 9px; border-radius: 99px; background: var(--navy); color: var(--white); }
+  .skill-band-badge.weakest { background: var(--red); }
+  .skill-bar-track { height: 6px; background: var(--gray-200); border-radius: 99px; overflow: hidden; }
+  .skill-bar-fill { height: 100%; background: var(--yellow); border-radius: 99px; }
+
+  .priority-box { margin-top: 16px; background: #fff7e0; border: 1px solid #ffe08a; border-radius: 10px; padding: 12px 14px; }
+  .priority-box h4 { color: var(--navy); font-size: 0.9rem; margin-bottom: 8px; }
+  .priority-item { font-size: 0.85rem; margin-bottom: 8px; }
+  .priority-item:last-child { margin-bottom: 0; }
+  .priority-item strong { color: var(--navy); }
+
+  .recordings-box { background: var(--gray-100); border: 1px solid var(--gray-200); padding: 14px; border-radius: 10px; margin-bottom: 16px; }
+  .recordings-box h4 { color: var(--navy); font-size: 0.9rem; margin-bottom: 10px; }
+  .recording-item { margin-bottom: 12px; }
+  .recording-item:last-child { margin-bottom: 0; }
+  .recording-item p { font-size: 0.82rem; font-weight: 700; margin-bottom: 4px; color: var(--gray-500); }
+  .recording-item audio { width: 100%; }
+  .recording-missing { font-size: 0.82rem; color: var(--gray-500); font-style: italic; }
+
+  @media (max-width: 560px) {
+    body { padding: 12px; }
+    .card { padding: 16px; }
+    #loginScreen { max-width: 100%; margin: 24px auto; }
+    .header { flex-direction: column; align-items: stretch; }
+    .header h2 { font-size: 1rem; }
+    .header-actions { width: 100%; }
+    .header-actions .btn { flex: 1; }
+  }
+</style>
 </head>
 <body>
 
 <div class="container">
 
-  <div id="loginScreen" class="card" style="max-width: 380px; margin: 60px auto;">
-    <h2 style="color: var(--primary); margin-bottom: 12px;">Examiner Login</h2>
-    <label><strong>Passphrase</strong></label>
-    <input type="password" id="examinerPass" placeholder="Enter examiner passphrase" style="width:100%; padding:10px; border:1px solid var(--border); border-radius:6px; margin-top:6px;" onkeydown="if(event.key==='Enter') login()">
+  <div id="loginScreen" class="card">
+    <div class="brand" style="margin-bottom:16px;">
+      <div class="brand-badge">C</div>
+      <strong style="color:var(--navy);">CONTEC</strong>
+    </div>
+    <h2 style="color: var(--navy); margin-bottom: 12px; font-size:1.1rem;">Examiner Login</h2>
+    <label style="font-weight:700; font-size:0.85rem; color:var(--navy);">Passphrase</label>
+    <input type="password" id="examinerPass" placeholder="Enter examiner passphrase" onkeydown="if(event.key==='Enter') login()">
     <button class="btn" style="width:100%; margin-top:12px;" onclick="login()">Enter</button>
-    <p id="loginError" style="color:#dc2626; margin-top:8px; display:none;"></p>
+    <p id="loginError" style="color:var(--red); margin-top:8px; display:none; font-size:0.85rem;"></p>
   </div>
 
   <div id="dashboard" style="display:none;">
 
   <div class="card">
     <div class="header">
-      <h2 style="color: var(--primary);">Examiner Evaluation Dashboard</h2>
-      <div style="display:flex; gap:8px;">
-        <button class="btn" onclick="loadSubmissions()">🔄 Refresh Submissions</button>
-        <button class="btn" style="background:#64748b;" onclick="logout()">Log out</button>
+      <div class="brand">
+        <div class="brand-badge">C</div>
+        <h2>Examiner Evaluation Dashboard</h2>
+      </div>
+      <div class="header-actions">
+        <button class="btn" onclick="loadSubmissions()">🔄 Refresh</button>
+        <button class="btn btn-muted" onclick="logout()">Log out</button>
       </div>
     </div>
 
+    <div class="table-scroll">
     <table>
       <thead>
         <tr>
@@ -65,20 +125,33 @@
         <tr><td colspan="9" style="text-align:center;">Loading submissions...</td></tr>
       </tbody>
     </table>
+    </div>
   </div>
 
   <!-- Grading Panel -->
-  <div id="gradingPanel" class="card" style="display:none; border-top: 5px solid var(--secondary);">
-    <h3 style="color: var(--secondary); margin-bottom: 12px;">Candidate Assessment: <span id="evalName"></span></h3>
-    
-    <div style="background: #f8fafc; border: 1px solid var(--border); padding: 12px; border-radius: 6px; margin-bottom: 16px;">
-      <strong>Student Written Response:</strong>
-      <p id="evalWritingText" style="margin-top: 6px; font-style: italic; white-space: pre-wrap;"></p>
+  <div id="gradingPanel" class="card" style="display:none; border-top: 5px solid var(--yellow);">
+    <h3 style="color: var(--navy); margin-bottom: 12px;">Candidate Assessment: <span id="evalName"></span></h3>
+
+    <div style="background: var(--gray-100); border: 1px solid var(--gray-200); padding: 12px; border-radius: 10px; margin-bottom: 16px;">
+      <strong style="font-size:0.85rem; color:var(--navy);">Student Written Response:</strong>
+      <p id="evalWritingText" style="margin-top: 6px; font-style: italic; white-space: pre-wrap; font-size:0.9rem;"></p>
+    </div>
+
+    <div class="recordings-box">
+      <h4>🎤 Speaking Recordings</h4>
+      <div class="recording-item">
+        <p>1. Tell us about yourself — your name, your role, and what a typical day at work looks like for you.</p>
+        <div id="recording1Slot"></div>
+      </div>
+      <div class="recording-item">
+        <p>2. Describe a challenge or problem you faced at work, how you dealt with it, and what you learned from it.</p>
+        <div id="recording2Slot"></div>
+      </div>
     </div>
 
     <div class="grid-2">
       <div>
-        <label><strong>Writing Evaluation (0-6 pts):</strong></label>
+        <label style="font-weight:700; font-size:0.85rem; color:var(--navy);">Writing Evaluation (0-6 pts):</label>
         <select id="evalWritingScore">
           <option value="0">0 - Off-topic / Unintelligible</option>
           <option value="1">1 - Severe syntactic breakdown (A1)</option>
@@ -91,8 +164,9 @@
       </div>
 
       <div>
-        <label><strong>Speaking Oral Evaluation (0-15 pts):</strong></label>
+        <label style="font-weight:700; font-size:0.85rem; color:var(--navy);">Speaking Oral Evaluation (0-15 pts):</label>
         <select id="evalSpeakingScore">
+          <option value="" selected disabled>Select a score...</option>
           <option value="3">3 - A1: Minimal words / Significant pauses</option>
           <option value="6">6 - A2: Simple phrases / Basic daily interactions</option>
           <option value="9">9 - B1: Connected discourse / Work conversations</option>
@@ -102,12 +176,17 @@
       </div>
     </div>
 
-    <button class="btn" style="background: var(--secondary); margin-top: 16px; width: 100%;" onclick="submitGrades()">Finalize Assessment & Update Syllabus</button>
+    <button class="btn" style="margin-top: 16px; width: 100%;" onclick="submitGrades()">Finalize Assessment &amp; Update Syllabus</button>
 
     <div id="syllabusResult" class="syllabus-box" style="display:none;">
-      <h4 style="color: var(--primary);">Assigned Level: <span id="resLevel"></span> (<span id="resScore"></span>/40)</h4>
-      <p><strong>Target Syllabus Modules:</strong></p>
-      <ul id="resSyllabusList" style="margin-left: 20px; margin-top: 6px;"></ul>
+      <h4 style="color: var(--navy);">Overall Level: <span id="resLevel"></span> (<span id="resScore"></span>/40)</h4>
+
+      <div class="skill-grid" id="skillGrid"></div>
+
+      <div class="priority-box" id="priorityBox">
+        <h4>🎯 Priority Areas for Improvement</h4>
+        <div id="priorityList"></div>
+      </div>
     </div>
   </div>
 
@@ -122,13 +201,94 @@
   let activeCandidate = null;
   let examinerKey = sessionStorage.getItem('examinerKey') || '';
 
-  const SYLLABUS = {
-    'A1': ['Grammar: Present simple routines & basic pronouns', 'Speaking: Introductions & job roles', 'Listening: Simple factual workplace phrases'],
-    'A2': ['Grammar: Past simple vs Present perfect', 'Speaking: Handling routine check-ins & operational updates', 'Reading: Short instructions and memos'],
-    'B1': ['Grammar: Conditionals (1st & 2nd) & passive voice', 'Speaking: Defending opinions in team meetings', 'Writing: Paragraph emails & status summaries'],
-    'B2': ['Grammar: Complex modal deductions & transitions', 'Speaking: Leading discussions & negotiations', 'Listening: Technical briefings & multiple accents'],
-    'C1': ['Grammar: Syntactic inversion & advanced discourse markers', 'Speaking: High-stakes presentations & executive strategy', 'Reading: Critical regulatory & technical analysis']
+  // Per-skill, per-level focus areas — used to build targeted "areas for improvement"
+  // for whichever skill(s) actually scored weakest, rather than one generic list per overall level.
+  const SKILL_MODULES = {
+    reading: {
+      A1: 'Practice reading short workplace notices, labels, and simple instructions.',
+      A2: 'Build comprehension of short memos, emails, and routine procedural documents.',
+      B1: 'Develop skimming and scanning skills for reports and multi-paragraph documents.',
+      B2: 'Strengthen understanding of technical briefings and cross-referenced documents.',
+      C1: 'Refine critical analysis of complex regulatory, contractual, or technical text.'
+    },
+    listening: {
+      A1: 'Practice recognizing simple factual statements and basic workplace vocabulary.',
+      A2: 'Improve understanding of short spoken instructions and routine conversations.',
+      B1: 'Work on following multi-speaker conversations and identifying key details.',
+      B2: 'Strengthen comprehension of technical briefings and varied accents.',
+      C1: 'Refine the ability to follow fast, nuanced discussion in high-stakes meetings.'
+    },
+    writing: {
+      A1: 'Practice forming basic sentences with correct word order and simple vocabulary.',
+      A2: 'Build skills writing short, clear messages and routine emails.',
+      B1: 'Develop structured paragraph writing for status updates and summaries.',
+      B2: 'Strengthen professional tone, cohesion, and clarity in longer written communication.',
+      C1: 'Refine precision, nuance, and persuasive structure in executive-level writing.'
+    },
+    speaking: {
+      A1: 'Practice basic self-introductions and simple workplace vocabulary aloud.',
+      A2: 'Build confidence with short daily interactions and routine check-ins.',
+      B1: 'Develop the ability to explain and justify opinions in team discussions.',
+      B2: 'Strengthen fluency and confidence in leading discussions and negotiations.',
+      C1: 'Refine spontaneous, sophisticated communication for executive-level presentations.'
+    }
   };
+
+  const BAND_RANK = { A1: 1, A2: 2, B1: 3, B2: 4, C1: 5 };
+
+  function cefrBand(pct) {
+    if (pct >= 90) return 'C1';
+    if (pct >= 75) return 'B2';
+    if (pct >= 52.5) return 'B1';
+    if (pct >= 30) return 'A2';
+    return 'A1';
+  }
+
+  function buildSkillBreakdown(readingScore, listeningScore, writingScore, speakingScore) {
+    const skills = [
+      { key: 'reading', label: 'Reading', icon: '📖', score: Number(readingScore), max: 5 },
+      { key: 'listening', label: 'Listening', icon: '🎧', score: Number(listeningScore), max: 14 },
+      { key: 'writing', label: 'Writing', icon: '✍️', score: Number(writingScore), max: 6 },
+      { key: 'speaking', label: 'Speaking', icon: '🎤', score: Number(speakingScore), max: 15 }
+    ].map(s => {
+      const pct = (s.score / s.max) * 100;
+      return { ...s, pct, band: cefrBand(pct) };
+    });
+
+    const minRank = Math.min(...skills.map(s => BAND_RANK[s.band]));
+    const weakestKeys = skills.filter(s => BAND_RANK[s.band] === minRank)
+      .sort((a, b) => a.pct - b.pct)
+      .slice(0, 2)
+      .map(s => s.key);
+
+    return { skills, weakestKeys };
+  }
+
+  function renderResultsPanel(cefr, total, readingScore, listeningScore, writingScore, speakingScore) {
+    document.getElementById('resLevel').innerText = cefr;
+    document.getElementById('resScore').innerText = total;
+
+    const { skills, weakestKeys } = buildSkillBreakdown(readingScore, listeningScore, writingScore, speakingScore);
+
+    const skillGrid = document.getElementById('skillGrid');
+    skillGrid.innerHTML = skills.map(s => `
+      <div class="skill-card">
+        <div class="skill-card-head">
+          <span class="skill-card-name">${s.icon} ${s.label}</span>
+          <span class="skill-band-badge ${weakestKeys.includes(s.key) ? 'weakest' : ''}">${s.band}</span>
+        </div>
+        <div class="skill-bar-track"><div class="skill-bar-fill" style="width:${Math.max(0, Math.min(100, s.pct))}%;"></div></div>
+      </div>
+    `).join('');
+
+    const priorityList = document.getElementById('priorityList');
+    priorityList.innerHTML = weakestKeys.map(key => {
+      const skill = skills.find(s => s.key === key);
+      return `<div class="priority-item"><strong>${skill.label} (${skill.band}):</strong> ${SKILL_MODULES[key][skill.band]}</div>`;
+    }).join('');
+
+    document.getElementById('syllabusResult').style.display = 'block';
+  }
 
   function login() {
     examinerKey = document.getElementById('examinerPass').value.trim();
@@ -140,7 +300,6 @@
       errEl.style.display = 'block';
       return;
     }
-
     attemptLogin();
   }
 
@@ -169,26 +328,18 @@
     tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;">Loading submissions...</td></tr>';
 
     try {
-      const res = await fetch(`${SCRIPT_URL}?key=${encodeURIComponent(examinerKey)}`, {
-        method: "GET",
-        redirect: "follow"
-      });
-
-      if (!res.ok) {
-        throw new Error(`HTTP status ${res.status}`);
-      }
+      const res = await fetch(`${SCRIPT_URL}?key=${encodeURIComponent(examinerKey)}`, { method: "GET", redirect: "follow" });
+      if (!res.ok) throw new Error(`HTTP status ${res.status}`);
 
       const data = await res.json();
-      if (data.status !== 'success') {
-        throw new Error(data.message || 'Unauthorized');
-      }
+      if (data.status !== 'success') throw new Error(data.message || 'Unauthorized');
 
       candidates = data.records || [];
       renderTable();
       return true;
     } catch (err) {
       console.error("Fetch Error:", err);
-      tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; color:#dc2626;">Error connecting to Google Sheets: ${err.message}</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; color:var(--red);">Error connecting to Google Sheets: ${err.message}</td></tr>`;
       return false;
     }
   }
@@ -198,7 +349,7 @@
     tbody.innerHTML = '';
 
     if (!candidates || candidates.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; color:#64748b;">No submissions received yet.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; color:var(--gray-500);">No submissions received yet.</td></tr>';
       return;
     }
 
@@ -214,11 +365,20 @@
         <td>${c.writingScore !== "" ? c.writingScore : "-"}</td>
         <td>${c.speakingScore !== "" ? c.speakingScore : "-"}</td>
         <td><strong>${c.totalScore !== "" ? c.totalScore : "-"}</strong></td>
-        <td><span class="badge" style="background:#1e3a8a; color:#fff;">${c.cefrLevel || "-"}</span></td>
+        <td><span class="badge level-badge">${c.cefrLevel || "-"}</span></td>
         <td><span class="badge ${c.status === 'Completed' ? 'status-completed' : 'status-pending'}">${c.status}</span></td>
       `;
       tbody.appendChild(tr);
     });
+  }
+
+  function renderRecordingSlot(elId, url) {
+    const el = document.getElementById(elId);
+    if (url) {
+      el.innerHTML = `<audio controls src="${url}"></audio>`;
+    } else {
+      el.innerHTML = `<span class="recording-missing">No recording submitted</span>`;
+    }
   }
 
   function openEvaluation(id) {
@@ -228,22 +388,41 @@
     document.getElementById('gradingPanel').style.display = 'block';
     document.getElementById('evalName').innerText = `${activeCandidate.fullName} (${activeCandidate.department})`;
     document.getElementById('evalWritingText').innerText = activeCandidate.writingText || "(No writing submission provided)";
-    
+
+    renderRecordingSlot('recording1Slot', activeCandidate.speakingAudio1Url);
+    renderRecordingSlot('recording2Slot', activeCandidate.speakingAudio2Url);
+
     if (activeCandidate.writingScore !== "") document.getElementById('evalWritingScore').value = activeCandidate.writingScore;
     if (activeCandidate.speakingScore !== "") document.getElementById('evalSpeakingScore').value = activeCandidate.speakingScore;
 
-    document.getElementById('syllabusResult').style.display = 'none';
+    // If this candidate was already graded, show the level + improvement breakdown right away.
+    if (activeCandidate.status === 'Completed' && activeCandidate.writingScore !== "" && activeCandidate.speakingScore !== "") {
+      renderResultsPanel(
+        activeCandidate.cefrLevel,
+        activeCandidate.totalScore,
+        activeCandidate.readingScore,
+        activeCandidate.listeningScore,
+        activeCandidate.writingScore,
+        activeCandidate.speakingScore
+      );
+    } else {
+      document.getElementById('syllabusResult').style.display = 'none';
+    }
+
     document.getElementById('gradingPanel').scrollIntoView({ behavior: 'smooth' });
   }
 
   async function submitGrades() {
     if (!activeCandidate) return;
 
+    const speakingScore = document.getElementById('evalSpeakingScore').value;
+    if (!speakingScore) { alert('Please select a Speaking score before finalizing.'); return; }
+
     const payload = {
       action: "EXAMINER_GRADE",
       id: activeCandidate.id,
       writingScore: document.getElementById('evalWritingScore').value,
-      speakingScore: document.getElementById('evalSpeakingScore').value,
+      speakingScore: speakingScore,
       examinerKey: examinerKey
     };
 
@@ -256,17 +435,14 @@
       const data = await res.json();
 
       if (data.status === 'success') {
-        document.getElementById('syllabusResult').style.display = 'block';
-        document.getElementById('resLevel').innerText = `Level ${data.cefr}`;
-        document.getElementById('resScore').innerText = data.total;
-
-        const ul = document.getElementById('resSyllabusList');
-        ul.innerHTML = '';
-        (SYLLABUS[data.cefr] || []).forEach(m => {
-          const li = document.createElement('li');
-          li.innerText = m;
-          ul.appendChild(li);
-        });
+        renderResultsPanel(
+          data.cefr,
+          data.total,
+          activeCandidate.readingScore,
+          activeCandidate.listeningScore,
+          payload.writingScore,
+          payload.speakingScore
+        );
 
         loadSubmissions();
       } else {
@@ -277,7 +453,6 @@
     }
   }
 
-  // If a passphrase was saved this session, skip straight to the dashboard.
   if (examinerKey) {
     attemptLogin();
   }

@@ -1,189 +1,774 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CONTEC - English Placement Assessment</title>
-  <style>
-    :root { --primary: #1e3a8a; --bg: #f8fafc; --card: #ffffff; --border: #cbd5e1; --text: #1e293b; }
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
-    body { background: var(--bg); color: var(--text); line-height: 1.5; padding: 20px; }
-    .container { max-width: 780px; margin: 0 auto; }
-    .card { background: var(--card); border: 1px solid var(--border); padding: 24px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-    h1 { color: var(--primary); font-size: 1.4rem; }
-    .section-title { font-size: 1.1rem; font-weight: bold; color: var(--primary); border-bottom: 2px solid #e2e8f0; padding-bottom: 6px; margin-bottom: 14px; }
-    .passage { background: #f1f5f9; border-left: 4px solid var(--primary); padding: 14px; border-radius: 4px; margin-bottom: 16px; font-size: 0.95rem; }
-    .q-item { margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px dashed #e2e8f0; }
-    .options { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 6px; }
-    .options label { cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 0.9rem; }
-    input[type="text"], textarea { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 0.95rem; margin-top: 4px; }
-    textarea { min-height: 120px; resize: vertical; }
-    .btn { background: var(--primary); color: #fff; padding: 14px 20px; border: none; border-radius: 6px; font-size: 1rem; font-weight: bold; cursor: pointer; width: 100%; }
-    .btn:disabled { background: #94a3b8; cursor: not-allowed; }
-    #success-screen { display: none; text-align: center; padding: 40px 20px; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CONTEC - English Placement Assessment</title>
+<style>
+  :root {
+    --navy: #0b1f4d;
+    --navy-dark: #071433;
+    --navy-tint: #eef1fa;
+    --yellow: #ffc700;
+    --yellow-dark: #e6b400;
+    --white: #ffffff;
+    --black: #111318;
+    --gray-100: #f5f6fa;
+    --gray-200: #e3e7ef;
+    --gray-500: #6b7280;
+    --red: #dc2626;
+    --green: #15803d;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
+  body { background: var(--gray-100); color: var(--black); line-height: 1.55; }
+
+  .app { max-width: 720px; margin: 0 auto; min-height: 100vh; display: flex; flex-direction: column; }
+
+  /* ---- Top bar ---- */
+  .topbar { position: sticky; top: 0; z-index: 10; background: var(--navy); padding: 14px 20px 16px; box-shadow: 0 2px 10px rgba(0,0,0,0.15); }
+  .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .brand-badge { width: 32px; height: 32px; background: var(--white); color: #2259ff; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.05rem; }
+  .brand-name { color: var(--white); font-weight: 800; letter-spacing: 0.5px; font-size: 1.05rem; }
+  #brandLogo { height: 32px; display: none; }
+  .progress-track { height: 8px; background: rgba(255,255,255,0.15); border-radius: 99px; overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--yellow); border-radius: 99px; width: 0%; transition: width 0.4s ease; }
+  .step-label { color: rgba(255,255,255,0.75); font-size: 0.78rem; margin-top: 6px; font-weight: 600; letter-spacing: 0.3px; }
+
+  /* ---- Stage / screens ---- */
+  .stage { flex: 1; padding: 24px 18px 60px; }
+  .screen { display: none; animation: fadeIn 0.35s ease; }
+  .screen.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+  .card { background: var(--white); border: 1px solid var(--gray-200); padding: 22px; border-radius: 18px; margin-bottom: 18px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+
+  .hero { background: linear-gradient(135deg, var(--navy) 0%, var(--navy-dark) 100%); color: var(--white); border-radius: 18px; padding: 28px 22px; margin-bottom: 18px; }
+  .hero h1 { font-size: 1.4rem; margin-bottom: 6px; }
+  .hero p { color: rgba(255,255,255,0.8); font-size: 0.92rem; margin-bottom: 16px; }
+  .hero-stats { display: flex; gap: 10px; flex-wrap: wrap; }
+  .hero-stat { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); border-radius: 10px; padding: 8px 12px; font-size: 0.78rem; color: var(--white); font-weight: 600; }
+
+  label.field-label { display: block; font-weight: 700; font-size: 0.85rem; margin-bottom: 6px; color: var(--navy); }
+  input[type="text"], textarea {
+    width: 100%; padding: 12px 14px; border: 2px solid var(--gray-200); border-radius: 12px;
+    font-size: 0.95rem; background: var(--white); transition: border-color 0.15s;
+  }
+  input[type="text"]:focus, textarea:focus { outline: none; border-color: var(--navy); }
+  textarea { min-height: 140px; resize: vertical; }
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 4px; }
+  @media (max-width: 480px) { .field-row { grid-template-columns: 1fr; } }
+
+  .section-head { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+  .section-icon { width: 40px; height: 40px; border-radius: 12px; background: var(--navy-tint); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0; }
+  .section-title { font-size: 1.1rem; font-weight: 800; color: var(--navy); }
+  .points-badge { margin-left: auto; background: var(--yellow); color: var(--navy); font-weight: 800; font-size: 0.75rem; padding: 5px 10px; border-radius: 99px; white-space: nowrap; }
+
+  .passage { background: var(--navy-tint); border-left: 4px solid var(--navy); padding: 16px; border-radius: 10px; margin-bottom: 18px; font-size: 0.94rem; }
+  .passage strong { color: var(--navy); }
+
+  fieldset { border: none; padding: 0; margin: 0 0 18px 0; }
+  fieldset:last-child { margin-bottom: 0; }
+  fieldset.invalid { outline: 2px solid var(--red); outline-offset: 8px; border-radius: 10px; }
+  legend { font-weight: 700; font-size: 0.92rem; margin-bottom: 8px; padding: 0; }
+
+  .section-warning { display: none; color: var(--red); font-size: 0.85rem; font-weight: 700; margin-bottom: 10px; }
+
+  .choices { display: flex; flex-direction: column; gap: 8px; }
+  .choice { display: flex; align-items: center; gap: 12px; border: 2px solid var(--gray-200); border-radius: 12px; padding: 11px 14px; cursor: pointer; transition: border-color 0.15s, background 0.15s, transform 0.1s; background: var(--white); }
+  .choice:hover { border-color: var(--navy); }
+  .choice.selected { border-color: var(--navy); background: var(--navy-tint); }
+  .choice input { position: absolute; opacity: 0; pointer-events: none; }
+  .choice-mark { width: 26px; height: 26px; border-radius: 50%; background: var(--gray-100); border: 2px solid var(--gray-200); display: flex; align-items: center; justify-content: center; font-size: 0.78rem; font-weight: 800; color: var(--gray-500); flex-shrink: 0; transition: all 0.15s; }
+  .choice.selected .choice-mark { background: var(--navy); border-color: var(--navy); color: var(--white); }
+  .choice-text { font-size: 0.9rem; }
+
+  .writing-meta { display: flex; justify-content: space-between; margin-top: 8px; font-size: 0.78rem; color: var(--gray-500); }
+
+  /* ---- Audio player ---- */
+  .audio-player { display: flex; align-items: center; gap: 14px; background: var(--navy); border-radius: 14px; padding: 14px 16px; margin-bottom: 8px; }
+  .play-btn { width: 42px; height: 42px; border-radius: 50%; background: var(--yellow); border: none; color: var(--navy); font-size: 1.1rem; font-weight: 800; cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+  .play-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .audio-track { flex: 1; height: 8px; background: rgba(255,255,255,0.2); border-radius: 99px; cursor: pointer; position: relative; }
+  .audio-track-fill { height: 100%; background: var(--yellow); border-radius: 99px; width: 0%; }
+  .audio-time { color: rgba(255,255,255,0.8); font-size: 0.75rem; font-weight: 700; white-space: nowrap; }
+  .audio-error { display: none; color: var(--red); font-size: 0.82rem; margin-bottom: 18px; }
+  .audio-hint { font-size: 0.8rem; color: var(--gray-500); margin-bottom: 18px; }
+
+  /* ---- Speaking recorder ---- */
+  .recorder-card { border: 2px solid var(--gray-200); border-radius: 14px; padding: 16px; margin-bottom: 14px; }
+  .recorder-prompt { font-size: 0.92rem; font-weight: 700; margin-bottom: 12px; }
+  .rec-btn { display: inline-flex; align-items: center; gap: 8px; background: var(--navy); color: var(--white); border: none; padding: 11px 18px; border-radius: 99px; font-weight: 700; font-size: 0.88rem; cursor: pointer; }
+  .rec-btn.recording { background: var(--red); }
+  .rec-btn .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--white); }
+  .rec-btn.recording .dot { animation: pulse 1s infinite; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+  .rec-timer { font-weight: 800; font-size: 0.88rem; color: var(--red); margin-left: 10px; }
+  .rec-playback { margin-top: 12px; display: none; }
+  .rec-playback audio { width: 100%; margin-bottom: 8px; }
+  .rerecord-btn { background: none; border: 2px solid var(--gray-200); color: var(--navy); padding: 7px 14px; border-radius: 99px; font-weight: 700; font-size: 0.8rem; cursor: pointer; }
+  .rec-status { font-size: 0.78rem; color: var(--gray-500); margin-top: 6px; }
+  .rec-status.done { color: var(--green); font-weight: 700; }
+  .mic-error { color: var(--red); font-size: 0.82rem; margin-top: 8px; display: none; }
+
+  /* ---- Buttons / nav ---- */
+  .nav-row { display: flex; gap: 10px; margin-top: 6px; }
+  .btn { background: var(--yellow); color: var(--navy); padding: 15px 22px; border: none; border-radius: 99px; font-size: 0.98rem; font-weight: 800; cursor: pointer; width: 100%; transition: transform 0.1s, opacity 0.15s; }
+  .btn:active { transform: scale(0.98); }
+  .btn:disabled { background: var(--gray-200); color: var(--gray-500); cursor: not-allowed; }
+  .btn-back { background: var(--white); color: var(--navy); border: 2px solid var(--gray-200); flex: 0 0 110px; width: auto; }
+
+  /* ---- Success screen ---- */
+  #successScreen { text-align: center; padding: 60px 20px; }
+  .success-badge { width: 84px; height: 84px; border-radius: 50%; background: var(--yellow); color: var(--navy); font-size: 2.4rem; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; }
+  #successScreen h2 { color: var(--navy); font-size: 1.4rem; margin-bottom: 10px; }
+  #successScreen p { color: var(--gray-500); font-size: 0.95rem; max-width: 420px; margin: 0 auto; }
+</style>
 </head>
 <body>
 
-<div class="container">
-  
-  <div id="test-screen">
-    <div class="card" style="border-top: 5px solid var(--primary);">
-      <h1>CONTEC English Placement Assessment</h1>
-      <p style="color: #64748b; font-size: 0.9rem; margin-bottom: 16px;">English Placement Assessment • Candidate Testing Portal</p>
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-        <div>
-          <label><strong>Full Name *</strong></label>
-          <input type="text" id="sName" placeholder="Enter your full name" required>
-        </div>
-        <div>
-          <label><strong>Department *</strong></label>
-          <input type="text" id="sDept" placeholder="e.g. Operations" required>
-        </div>
-      </div>
+<div class="app">
+
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-badge">C</div>
+      <div class="brand-name">CONTEC</div>
     </div>
-
-    <!-- Section 1: Reading -->
-    <div class="card">
-      <div class="section-title">Section 1: Reading Comprehension (5 Points)</div>
-      <div class="passage">
-        <strong>A New Way of Working</strong><br><br>
-        Many companies are changing the way their employees work. In the past, most employees worked in an office from Monday to Friday. Today, however, many companies allow employees to work remotely for part or all of the week.<br><br>
-        Working remotely has several advantages. Employees can save time because they do not have to travel to work every day. Some people also find it easier to concentrate when they work from home. Companies can benefit too because they may need less office space.<br><br>
-        However, remote work also has disadvantages. Employees may sometimes feel isolated, and communication can be more difficult when people are not working in the same place. For this reason, many companies use a combination of office and remote work.<br><br>
-        This system is often called hybrid working. It allows employees to work from home on some days and from the office on others. Many businesses believe that this approach offers a good balance between flexibility and teamwork.
-      </div>
-
-      <div class="q-item">
-        <p><strong>1. What change have many companies made?</strong></p>
-        <div class="options">
-          <label><input type="radio" name="r1" value="A"> A. Compulsory weekend work</label>
-          <label><input type="radio" name="r1" value="B"> B. Allowing remote/hybrid work</label>
-          <label><input type="radio" name="r1" value="C"> C. Increasing business travel</label>
-        </div>
-      </div>
-      <div class="q-item">
-        <p><strong>2. What is an advantage for employees?</strong></p>
-        <div class="options">
-          <label><input type="radio" name="r2" value="A"> A. Saving travel time & easier concentration</label>
-          <label><input type="radio" name="r2" value="B"> B. Free office catering</label>
-          <label><input type="radio" name="r2" value="C"> C. Less technology use</label>
-        </div>
-      </div>
-      <div class="q-item">
-        <p><strong>3. How can companies benefit?</strong></p>
-        <div class="options">
-          <label><input type="radio" name="r3" value="A"> A. Hiring fewer employees</label>
-          <label><input type="radio" name="r3" value="B"> B. Reducing office space needs</label>
-          <label><input type="radio" name="r3" value="C"> C. Stopping staff communication</label>
-        </div>
-      </div>
-      <div class="q-item">
-        <p><strong>4. What is a stated disadvantage of remote work?</strong></p>
-        <div class="options">
-          <label><input type="radio" name="r4" value="A"> A. Excessive teamwork</label>
-          <label><input type="radio" name="r4" value="B"> B. Isolation and difficult communication</label>
-          <label><input type="radio" name="r4" value="C"> C. Higher commute costs</label>
-        </div>
-      </div>
-      <div class="q-item">
-        <p><strong>5. What is "hybrid working"?</strong></p>
-        <div class="options">
-          <label><input type="radio" name="r5" value="A"> A. Working some days from home and others at the office</label>
-          <label><input type="radio" name="r5" value="B"> B. Working exclusively in the office</label>
-          <label><input type="radio" name="r5" value="C"> C. Changing job roles weekly</label>
-        </div>
-      </div>
-    </div>
-
-    <!-- Section 2: Writing -->
-    <div class="card">
-      <div class="section-title">Section 2: Writing Task (6 Points)</div>
-      <p style="font-size: 0.9rem; margin-bottom: 8px;"><strong>Topic:</strong> Write at least 5 lines on: <em>"What are the advantages of using English in the workplace?"</em></p>
-      <textarea id="sWriting" placeholder="Type your response here..."></textarea>
-    </div>
-
-    <!-- Section 4: Listening -->
-    <div class="card">
-      <div class="section-title">Section 4: Listening Assessment (14 Points)</div>
-      <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 12px;">Select Emily (A), Mark (B), or Lily (C) for each audio prompt statement:</p>
-      <div class="q-item"><p><strong>1. Who is very intelligent?</strong></p><div class="options"><label><input type="radio" name="l1" value="A"> A. Emily</label><label><input type="radio" name="l1" value="B"> B. Mark</label><label><input type="radio" name="l1" value="C"> C. Lily</label></div></div>
-      <div class="q-item"><p><strong>2. Who was shy at the beginning?</strong></p><div class="options"><label><input type="radio" name="l2" value="A"> A. Emily</label><label><input type="radio" name="l2" value="B"> B. Mark</label><label><input type="radio" name="l2" value="C"> C. Lily</label></div></div>
-      <div class="q-item"><p><strong>3. Who is very sociable?</strong></p><div class="options"><label><input type="radio" name="l3" value="A"> A. Emily</label><label><input type="radio" name="l3" value="B"> B. Mark</label><label><input type="radio" name="l3" value="C"> C. Lily</label></div></div>
-      <div class="q-item"><p><strong>4. Who can help with schoolwork?</strong></p><div class="options"><label><input type="radio" name="l4" value="A"> A. Emily</label><label><input type="radio" name="l4" value="B"> B. Mark</label><label><input type="radio" name="l4" value="C"> C. Lily</label></div></div>
-      <div class="q-item"><p><strong>5. Who likes sports?</strong></p><div class="options"><label><input type="radio" name="l5" value="A"> A. Emily</label><label><input type="radio" name="l5" value="B"> B. Mark</label><label><input type="radio" name="l5" value="C"> C. Lily</label></div></div>
-      <div class="q-item"><p><strong>6. Who loves watching movies?</strong></p><div class="options"><label><input type="radio" name="l6" value="A"> A. Emily</label><label><input type="radio" name="l6" value="B"> B. Mark</label><label><input type="radio" name="l6" value="C"> C. Lily</label></div></div>
-      <div class="q-item"><p><strong>7. Who will always keep a promise?</strong></p><div class="options"><label><input type="radio" name="l7" value="A"> A. Emily</label><label><input type="radio" name="l7" value="B"> B. Mark</label><label><input type="radio" name="l7" value="C"> C. Lily</label></div></div>
-    </div>
-
-    <!-- Section 3: Speaking Prompt Instructions -->
-    <div class="card">
-      <div class="section-title">Section 3: Speaking Assessment Information</div>
-      <p style="font-size: 0.9rem; color: #475569;">The speaking evaluation is conducted in a 1-on-1 interview with your examiner. Submit this written portion now; your evaluator will initiate your interview shortly.</p>
-    </div>
-
-    <button id="btnSubmit" class="btn" onclick="submitExam()">Submit Assessment</button>
+    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+    <div class="step-label" id="stepLabel">Step 1 of 5 · Welcome</div>
   </div>
 
-  <div id="success-screen" class="card">
-    <h2 style="color: #166534; margin-bottom: 8px;">✅ Assessment Submitted Successfully!</h2>
-    <p>Your responses have been recorded. Please await instructions for your individual speaking assessment.</p>
-  </div>
+  <div class="stage">
 
+    <!-- STEP 0: Welcome -->
+    <section class="screen active" data-step="0">
+      <div class="hero">
+        <h1>English Placement Assessment</h1>
+        <p>Candidate Testing Portal — let's find your English level.</p>
+        <div class="hero-stats">
+          <div class="hero-stat">📖 5 sections</div>
+          <div class="hero-stat">⏱️ ~20 minutes</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="field-row">
+          <div>
+            <label class="field-label">Full Name *</label>
+            <input type="text" id="sName" placeholder="Enter your full name" required>
+          </div>
+          <div>
+            <label class="field-label">Department *</label>
+            <input type="text" id="sDept" placeholder="e.g. Operations" required>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <label class="field-label">🎤 Microphone Check *</label>
+        <p style="font-size:0.85rem; color:var(--gray-500); margin-bottom:12px;">This assessment includes a recorded Speaking section — let's confirm your microphone works before you begin.</p>
+        <button type="button" class="btn" style="background:var(--navy); color:var(--white);" id="micCheckBtn" onclick="runMicCheck()">Test Microphone</button>
+        <p id="micCheckStatus" style="margin-top:10px; font-size:0.85rem; font-weight:700; display:none;"></p>
+      </div>
+
+      <button class="btn" id="btnStart" onclick="handleStart()" disabled>Begin Assessment →</button>
+    </section>
+
+    <!-- STEP 1: Reading -->
+    <section class="screen" data-step="1">
+      <div class="card">
+        <div class="section-head">
+          <div class="section-icon">📖</div>
+          <div class="section-title">Reading Comprehension</div>
+          <div class="points-badge">5 pts</div>
+        </div>
+
+        <div class="passage">
+          <strong>A New Way of Working</strong><br><br>
+          Many companies are changing the way their employees work. In the past, most employees worked in an office from Monday to Friday. Today, however, many companies allow employees to work remotely for part or all of the week.<br><br>
+          Working remotely has several advantages. Employees can save time because they do not have to travel to work every day. Some people also find it easier to concentrate when they work from home. Companies can benefit too because they may need less office space.<br><br>
+          However, remote work also has disadvantages. Employees may sometimes feel isolated, and communication can be more difficult when people are not working in the same place. For this reason, many companies use a combination of office and remote work.<br><br>
+          This system is often called hybrid working. It allows employees to work from home on some days and from the office on others. Many businesses believe that this approach offers a good balance between flexibility and teamwork.
+        </div>
+
+        <fieldset>
+          <legend>1. What change have many companies made?</legend>
+          <div class="choices">
+            <label class="choice"><input type="radio" name="r1" value="A"><span class="choice-mark">A</span><span class="choice-text">Requiring all staff to relocate closer to the office</span></label>
+            <label class="choice"><input type="radio" name="r1" value="B"><span class="choice-mark">B</span><span class="choice-text">Allowing employees to work remotely or in a hybrid pattern</span></label>
+            <label class="choice"><input type="radio" name="r1" value="C"><span class="choice-mark">C</span><span class="choice-text">Extending the standard working week to six days</span></label>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>2. What is an advantage for employees mentioned in the passage?</legend>
+          <div class="choices">
+            <label class="choice"><input type="radio" name="r2" value="A"><span class="choice-mark">A</span><span class="choice-text">They save time because they don't have to travel to work every day</span></label>
+            <label class="choice"><input type="radio" name="r2" value="B"><span class="choice-mark">B</span><span class="choice-text">They receive a higher salary for the same role</span></label>
+            <label class="choice"><input type="radio" name="r2" value="C"><span class="choice-mark">C</span><span class="choice-text">They are guaranteed a promotion within a year</span></label>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>3. According to the passage, how can companies benefit from hybrid working?</legend>
+          <div class="choices">
+            <label class="choice"><input type="radio" name="r3" value="A"><span class="choice-mark">A</span><span class="choice-text">They can reduce how much they spend on staff training</span></label>
+            <label class="choice"><input type="radio" name="r3" value="B"><span class="choice-mark">B</span><span class="choice-text">They may need less office space</span></label>
+            <label class="choice"><input type="radio" name="r3" value="C"><span class="choice-mark">C</span><span class="choice-text">They can remove the need for team communication entirely</span></label>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>4. What disadvantage of remote work does the passage mention?</legend>
+          <div class="choices">
+            <label class="choice"><input type="radio" name="r4" value="A"><span class="choice-mark">A</span><span class="choice-text">Employees often work longer hours than expected</span></label>
+            <label class="choice"><input type="radio" name="r4" value="B"><span class="choice-mark">B</span><span class="choice-text">Employees may feel isolated and communication can be harder</span></label>
+            <label class="choice"><input type="radio" name="r4" value="C"><span class="choice-mark">C</span><span class="choice-text">Employees have fewer chances of career advancement</span></label>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>5. What is "hybrid working", as described in the passage?</legend>
+          <div class="choices">
+            <label class="choice"><input type="radio" name="r5" value="A"><span class="choice-mark">A</span><span class="choice-text">A system where employees split their time between home and the office</span></label>
+            <label class="choice"><input type="radio" name="r5" value="B"><span class="choice-mark">B</span><span class="choice-text">Working full-time from home, with occasional office visits for meetings</span></label>
+            <label class="choice"><input type="radio" name="r5" value="C"><span class="choice-mark">C</span><span class="choice-text">A system where two employees share one full-time position</span></label>
+          </div>
+        </fieldset>
+      </div>
+
+      <p class="section-warning" id="readingWarning"></p>
+      <div class="nav-row">
+        <button class="btn btn-back" onclick="goToStep(0)">← Back</button>
+        <button class="btn" onclick="handleContinueReading()">Continue</button>
+      </div>
+    </section>
+
+    <!-- STEP 2: Writing -->
+    <section class="screen" data-step="2">
+      <div class="card">
+        <div class="section-head">
+          <div class="section-icon">✍️</div>
+          <div class="section-title">Writing Task</div>
+          <div class="points-badge">6 pts</div>
+        </div>
+        <p style="font-size:0.9rem; margin-bottom:10px;"><strong>Topic:</strong> Describe a time you had to use English at work — in a meeting, with a colleague, on a call, or in an email. <em>What happened, and how did it go?</em> Aim for around 80-100 words.</p>
+        <textarea id="sWriting" placeholder="Type your response here..." oninput="updateWritingMeta()"></textarea>
+        <div class="writing-meta">
+          <span id="writingWordCount">0 words</span>
+          <span id="writingTargetHint">Aim for 80-100 words</span>
+        </div>
+      </div>
+
+      <p class="section-warning" id="writingWarning"></p>
+      <div class="nav-row">
+        <button class="btn btn-back" onclick="goToStep(1)">← Back</button>
+        <button class="btn" onclick="handleContinueWriting()">Continue</button>
+      </div>
+    </section>
+
+    <!-- STEP 3: Listening -->
+    <section class="screen" data-step="3">
+      <div class="card">
+        <div class="section-head">
+          <div class="section-icon">🎧</div>
+          <div class="section-title">Listening Comprehension</div>
+          <div class="points-badge">14 pts</div>
+        </div>
+
+        <p style="font-size:0.85rem; color:var(--gray-500); margin-bottom:12px;">Listen to the recording, then select Emily (A), Mark (B), or Lily (C) for each question.</p>
+
+        <div class="audio-player">
+          <button type="button" class="play-btn" id="playBtn" onclick="toggleListeningAudio()">▶</button>
+          <div class="audio-track" id="audioTrack"><div class="audio-track-fill" id="audioFill"></div></div>
+          <div class="audio-time" id="audioTime">0:00 / 0:00</div>
+        </div>
+        <audio id="listeningAudio" preload="metadata" src="audio/listening-team-intro.mp3"></audio>
+        <p class="audio-error" id="audioError">Audio couldn't be loaded. Let your examiner know, then continue with the questions below.</p>
+        <p class="audio-hint">You can replay the audio as many times as you need.</p>
+
+        <fieldset>
+          <legend>1. Who is very intelligent?</legend>
+          <div class="choices">
+            <label class="choice"><input type="radio" name="l1" value="A"><span class="choice-mark">A</span><span class="choice-text">Emily</span></label>
+            <label class="choice"><input type="radio" name="l1" value="B"><span class="choice-mark">B</span><span class="choice-text">Mark</span></label>
+            <label class="choice"><input type="radio" name="l1" value="C"><span class="choice-mark">C</span><span class="choice-text">Lily</span></label>
+          </div>
+        </fieldset>
+        <fieldset>
+          <legend>2. Who was shy at the beginning?</legend>
+          <div class="choices">
+            <label class="choice"><input type="radio" name="l2" value="A"><span class="choice-mark">A</span><span class="choice-text">Emily</span></label>
+            <label class="choice"><input type="radio" name="l2" value="B"><span class="choice-mark">B</span><span class="choice-text">Mark</span></label>
+            <label class="choice"><input type="radio" name="l2" value="C"><span class="choice-mark">C</span><span class="choice-text">Lily</span></label>
+          </div>
+        </fieldset>
+        <fieldset>
+          <legend>3. Who is very sociable?</legend>
+          <div class="choices">
+            <label class="choice"><input type="radio" name="l3" value="A"><span class="choice-mark">A</span><span class="choice-text">Emily</span></label>
+            <label class="choice"><input type="radio" name="l3" value="B"><span class="choice-mark">B</span><span class="choice-text">Mark</span></label>
+            <label class="choice"><input type="radio" name="l3" value="C"><span class="choice-mark">C</span><span class="choice-text">Lily</span></label>
+          </div>
+        </fieldset>
+        <fieldset>
+          <legend>4. Who can help with schoolwork?</legend>
+          <div class="choices">
+            <label class="choice"><input type="radio" name="l4" value="A"><span class="choice-mark">A</span><span class="choice-text">Emily</span></label>
+            <label class="choice"><input type="radio" name="l4" value="B"><span class="choice-mark">B</span><span class="choice-text">Mark</span></label>
+            <label class="choice"><input type="radio" name="l4" value="C"><span class="choice-mark">C</span><span class="choice-text">Lily</span></label>
+          </div>
+        </fieldset>
+        <fieldset>
+          <legend>5. Who likes sports?</legend>
+          <div class="choices">
+            <label class="choice"><input type="radio" name="l5" value="A"><span class="choice-mark">A</span><span class="choice-text">Emily</span></label>
+            <label class="choice"><input type="radio" name="l5" value="B"><span class="choice-mark">B</span><span class="choice-text">Mark</span></label>
+            <label class="choice"><input type="radio" name="l5" value="C"><span class="choice-mark">C</span><span class="choice-text">Lily</span></label>
+          </div>
+        </fieldset>
+        <fieldset>
+          <legend>6. Who loves watching movies?</legend>
+          <div class="choices">
+            <label class="choice"><input type="radio" name="l6" value="A"><span class="choice-mark">A</span><span class="choice-text">Emily</span></label>
+            <label class="choice"><input type="radio" name="l6" value="B"><span class="choice-mark">B</span><span class="choice-text">Mark</span></label>
+            <label class="choice"><input type="radio" name="l6" value="C"><span class="choice-mark">C</span><span class="choice-text">Lily</span></label>
+          </div>
+        </fieldset>
+        <fieldset>
+          <legend>7. Who will always keep a promise?</legend>
+          <div class="choices">
+            <label class="choice"><input type="radio" name="l7" value="A"><span class="choice-mark">A</span><span class="choice-text">Emily</span></label>
+            <label class="choice"><input type="radio" name="l7" value="B"><span class="choice-mark">B</span><span class="choice-text">Mark</span></label>
+            <label class="choice"><input type="radio" name="l7" value="C"><span class="choice-mark">C</span><span class="choice-text">Lily</span></label>
+          </div>
+        </fieldset>
+      </div>
+
+      <p class="section-warning" id="listeningWarning"></p>
+      <div class="nav-row">
+        <button class="btn btn-back" onclick="goToStep(2)">← Back</button>
+        <button class="btn" onclick="handleContinueListening()">Continue</button>
+      </div>
+    </section>
+
+    <!-- STEP 4: Speaking -->
+    <section class="screen" data-step="4">
+      <div class="card">
+        <div class="section-head">
+          <div class="section-icon">🎤</div>
+          <div class="section-title">Speaking Task</div>
+          <div class="points-badge">15 pts</div>
+        </div>
+        <p style="font-size:0.9rem; color:var(--gray-500); margin-bottom:16px;">Record your answer to each prompt below. Your examiner will listen to your recordings and score them — no live interview needed.</p>
+
+        <div class="recorder-card">
+          <div class="recorder-prompt">1. Tell us about yourself — your name, your role, and what a typical day at work looks like for you.</div>
+          <div class="rec-controls" id="recControls-1">
+            <button type="button" class="rec-btn" id="recBtn-1" onclick="toggleRecording(1)"><span class="dot"></span><span id="recBtnLabel-1">Record Answer</span></button>
+            <span class="rec-timer" id="recTimer-1" style="display:none;">00:00</span>
+          </div>
+          <div class="rec-playback" id="recPlayback-1">
+            <audio controls id="recAudio-1"></audio>
+            <button type="button" class="rerecord-btn" onclick="toggleRecording(1)">↺ Re-record</button>
+          </div>
+          <div class="rec-status" id="recStatus-1">Not recorded yet</div>
+          <div class="mic-error" id="micError-1"></div>
+        </div>
+
+        <div class="recorder-card">
+          <div class="recorder-prompt">2. Describe a challenge or problem you faced at work, how you dealt with it, and what you learned from it.</div>
+          <div class="rec-controls" id="recControls-2">
+            <button type="button" class="rec-btn" id="recBtn-2" onclick="toggleRecording(2)"><span class="dot"></span><span id="recBtnLabel-2">Record Answer</span></button>
+            <span class="rec-timer" id="recTimer-2" style="display:none;">00:00</span>
+          </div>
+          <div class="rec-playback" id="recPlayback-2">
+            <audio controls id="recAudio-2"></audio>
+            <button type="button" class="rerecord-btn" onclick="toggleRecording(2)">↺ Re-record</button>
+          </div>
+          <div class="rec-status" id="recStatus-2">Not recorded yet</div>
+          <div class="mic-error" id="micError-2"></div>
+        </div>
+      </div>
+
+      <div class="nav-row">
+        <button class="btn btn-back" onclick="goToStep(3)">← Back</button>
+        <button class="btn" id="btnSubmit" onclick="submitExam()" disabled>Submit Assessment</button>
+      </div>
+    </section>
+
+    <!-- STEP 5: Success -->
+    <section class="screen" id="successScreen" data-step="5">
+      <div class="success-badge">✓</div>
+      <h2>You're all set!</h2>
+      <p>Your assessment — including your speaking recordings — has been submitted. Your examiner will review everything and follow up with your results and a personalized learning plan.</p>
+    </section>
+
+  </div>
 </div>
 
 <script>
   const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwDoQenLdbe_hE1FC407BUqPt38F_P40brPua3I_fPuVPQkf310oOQHQtX65bPhIVnj/exec";
-
   const ANSWER_FIELDS = ['r1', 'r2', 'r3', 'r4', 'r5', 'l1', 'l2', 'l3', 'l4', 'l5', 'l6', 'l7'];
+  const STEP_NAMES = ['Welcome', 'Reading', 'Writing', 'Listening', 'Speaking'];
+  const TOTAL_STEPS = STEP_NAMES.length;
+
+  let currentStep = 0;
+  const screens = document.querySelectorAll('.screen');
+
+  function goToStep(n) {
+    screens.forEach(s => s.classList.toggle('active', Number(s.dataset.step) === n));
+    currentStep = n;
+    testInProgress = (n >= 1 && n < TOTAL_STEPS);
+    const displayStep = Math.min(n, TOTAL_STEPS - 1);
+    document.getElementById('progressFill').style.width = (displayStep / (TOTAL_STEPS - 1)) * 100 + '%';
+    document.getElementById('stepLabel').textContent = n < TOTAL_STEPS
+      ? `Step ${n + 1} of ${TOTAL_STEPS} · ${STEP_NAMES[n]}`
+      : 'Complete';
+
+    // Audio should only ever play while the candidate is on the Listening step.
+    if (n !== 3 && listeningAudio) {
+      listeningAudio.pause();
+      playBtn.textContent = '▶';
+    }
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function unansweredRadioGroups(names) {
+    return names.filter(name => !document.querySelector(`input[name="${name}"]:checked`));
+  }
+
+  function flagUnanswered(names, warningId) {
+    const missing = unansweredRadioGroups(names);
+    const warningEl = document.getElementById(warningId);
+
+    if (missing.length === 0) {
+      warningEl.style.display = 'none';
+      return true;
+    }
+
+    warningEl.textContent = `Please answer all questions before continuing (${missing.length} remaining).`;
+    warningEl.style.display = 'block';
+
+    missing.forEach(name => {
+      document.querySelector(`input[name="${name}"]`).closest('fieldset').classList.add('invalid');
+    });
+
+    document.querySelector(`input[name="${missing[0]}"]`).closest('fieldset')
+      .scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+    return false;
+  }
+
+  function handleContinueReading() {
+    if (flagUnanswered(['r1', 'r2', 'r3', 'r4', 'r5'], 'readingWarning')) goToStep(2);
+  }
+
+  function handleContinueListening() {
+    if (flagUnanswered(['l1', 'l2', 'l3', 'l4', 'l5', 'l6', 'l7'], 'listeningWarning')) goToStep(4);
+  }
+
+  function handleContinueWriting() {
+    const writingEl = document.getElementById('sWriting');
+    const warningEl = document.getElementById('writingWarning');
+    if (!writingEl.value.trim()) {
+      warningEl.textContent = 'Please write your response before continuing.';
+      warningEl.style.display = 'block';
+      writingEl.focus();
+      return;
+    }
+    warningEl.style.display = 'none';
+    goToStep(3);
+  }
+
+  let micReady = false;
+
+  function updateStartButton() {
+    const name = document.getElementById('sName').value.trim();
+    const dept = document.getElementById('sDept').value.trim();
+    document.getElementById('btnStart').disabled = !(name && dept && micReady);
+  }
+
+  async function runMicCheck() {
+    const btn = document.getElementById('micCheckBtn');
+    const statusEl = document.getElementById('micCheckStatus');
+    btn.disabled = true;
+    btn.textContent = 'Checking...';
+
+    if (!navigator.mediaDevices || !window.MediaRecorder) {
+      statusEl.textContent = '⚠️ Audio recording isn\'t supported in this browser. Please use a recent version of Chrome, Edge, or Safari.';
+      statusEl.style.color = 'var(--red)';
+      statusEl.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = 'Test Microphone';
+      return;
+    }
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      stream.getTracks().forEach(t => t.stop());
+      micReady = true;
+      statusEl.textContent = '✓ Microphone ready';
+      statusEl.style.color = 'var(--green)';
+      statusEl.style.display = 'block';
+      btn.textContent = '✓ Microphone Verified';
+    } catch (err) {
+      micReady = false;
+      statusEl.textContent = '⚠️ Microphone access is required to continue. Please allow microphone permissions in your browser, then try again.';
+      statusEl.style.color = 'var(--red)';
+      statusEl.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = 'Test Microphone';
+    }
+    updateStartButton();
+  }
+
+  function handleStart() {
+    const name = document.getElementById('sName').value.trim();
+    const dept = document.getElementById('sDept').value.trim();
+    if (!name || !dept) { alert('Please enter your name and department.'); return; }
+    if (!micReady) { alert('Please complete the microphone check before starting.'); return; }
+    goToStep(1);
+  }
+
+  ['sName', 'sDept'].forEach(id => {
+    document.getElementById(id).addEventListener('input', updateStartButton);
+  });
+
+  // Warn before leaving the page once the candidate has started — there is no autosave.
+  let testInProgress = false;
+  window.addEventListener('beforeunload', (e) => {
+    if (testInProgress) {
+      e.preventDefault();
+      e.returnValue = '';
+    }
+  });
+
+  // Toggle a "selected" style on the chosen choice card in each radio group,
+  // and clear any "unanswered" flag now that this question has a value.
+  document.addEventListener('change', (e) => {
+    if (e.target.matches('.choice input[type="radio"]')) {
+      const name = e.target.name;
+      document.querySelectorAll(`input[name="${name}"]`).forEach(input => {
+        input.closest('.choice').classList.toggle('selected', input.checked);
+      });
+
+      const fieldset = e.target.closest('fieldset');
+      fieldset.classList.remove('invalid');
+
+      if (name.startsWith('r')) {
+        const stillMissing = unansweredRadioGroups(['r1', 'r2', 'r3', 'r4', 'r5']);
+        if (stillMissing.length === 0) document.getElementById('readingWarning').style.display = 'none';
+      } else if (name.startsWith('l')) {
+        const stillMissing = unansweredRadioGroups(['l1', 'l2', 'l3', 'l4', 'l5', 'l6', 'l7']);
+        if (stillMissing.length === 0) document.getElementById('listeningWarning').style.display = 'none';
+      }
+    }
+  });
+
+  function updateWritingMeta() {
+    const text = document.getElementById('sWriting').value;
+    const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+    const countEl = document.getElementById('writingWordCount');
+    countEl.textContent = `${words} word${words === 1 ? '' : 's'}`;
+    countEl.style.color = words >= 80 ? 'var(--green)' : 'var(--gray-500)';
+  }
+
+  // ---- Listening audio player ----
+  const listeningAudio = document.getElementById('listeningAudio');
+  const playBtn = document.getElementById('playBtn');
+  const audioTrack = document.getElementById('audioTrack');
+  const audioFill = document.getElementById('audioFill');
+
+  function toggleListeningAudio() {
+    if (listeningAudio.paused) { listeningAudio.play(); playBtn.textContent = '⏸'; }
+    else { listeningAudio.pause(); playBtn.textContent = '▶'; }
+  }
+  function formatTime(t) {
+    if (!isFinite(t)) return '0:00';
+    const m = Math.floor(t / 60);
+    const s = Math.floor(t % 60).toString().padStart(2, '0');
+    return `${m}:${s}`;
+  }
+  function updateAudioTime() {
+    document.getElementById('audioTime').textContent = `${formatTime(listeningAudio.currentTime || 0)} / ${formatTime(listeningAudio.duration || 0)}`;
+  }
+  listeningAudio.addEventListener('loadedmetadata', updateAudioTime);
+  listeningAudio.addEventListener('timeupdate', () => {
+    audioFill.style.width = ((listeningAudio.currentTime / listeningAudio.duration) * 100 || 0) + '%';
+    updateAudioTime();
+  });
+  listeningAudio.addEventListener('ended', () => { playBtn.textContent = '▶'; });
+  listeningAudio.addEventListener('error', () => {
+    document.getElementById('audioError').style.display = 'block';
+    document.querySelector('.audio-player').style.opacity = '0.5';
+    playBtn.disabled = true;
+  });
+  audioTrack.addEventListener('click', (e) => {
+    if (!isFinite(listeningAudio.duration)) return;
+    const rect = audioTrack.getBoundingClientRect();
+    listeningAudio.currentTime = ((e.clientX - rect.left) / rect.width) * listeningAudio.duration;
+  });
+
+  // ---- Speaking recorder ----
+  const recordings = { 1: null, 2: null };
+  const recorders = { 1: null, 2: null };
+  const recTimers = { 1: null, 2: null };
+  let activeMicStream = null;
+
+  function pickMimeType() {
+    const candidates = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4', 'audio/ogg;codecs=opus'];
+    for (const c of candidates) {
+      if (window.MediaRecorder && MediaRecorder.isTypeSupported(c)) return c;
+    }
+    return '';
+  }
+
+  async function toggleRecording(promptNum) {
+    const btn = document.getElementById(`recBtn-${promptNum}`);
+    const errEl = document.getElementById(`micError-${promptNum}`);
+    errEl.style.display = 'none';
+
+    if (btn.classList.contains('recording')) {
+      recorders[promptNum].stop();
+      return;
+    }
+
+    if (!navigator.mediaDevices || !window.MediaRecorder) {
+      errEl.textContent = 'Audio recording is not supported in this browser. Please use a recent version of Chrome, Edge, or Safari.';
+      errEl.style.display = 'block';
+      return;
+    }
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      activeMicStream = stream;
+      const mimeType = pickMimeType();
+      const recorder = mimeType ? new MediaRecorder(stream, { mimeType }) : new MediaRecorder(stream);
+      const chunks = [];
+
+      recorder.ondataavailable = (e) => { if (e.data.size > 0) chunks.push(e.data); };
+      recorder.onstop = () => {
+        stream.getTracks().forEach(t => t.stop());
+        const blob = new Blob(chunks, { type: recorder.mimeType || 'audio/webm' });
+        recordings[promptNum] = blob;
+
+        const audioEl = document.getElementById(`recAudio-${promptNum}`);
+        audioEl.src = URL.createObjectURL(blob);
+
+        document.getElementById(`recPlayback-${promptNum}`).style.display = 'block';
+        document.getElementById(`recTimer-${promptNum}`).style.display = 'none';
+        document.getElementById(`recBtnLabel-${promptNum}`).textContent = 'Record Answer';
+        btn.classList.remove('recording');
+
+        const statusEl = document.getElementById(`recStatus-${promptNum}`);
+        statusEl.textContent = '✓ Recorded';
+        statusEl.classList.add('done');
+
+        updateSubmitButton();
+      };
+
+      recorders[promptNum] = recorder;
+      recorder.start();
+
+      btn.classList.add('recording');
+      document.getElementById(`recBtnLabel-${promptNum}`).textContent = 'Stop Recording';
+      document.getElementById(`recPlayback-${promptNum}`).style.display = 'none';
+
+      const timerEl = document.getElementById(`recTimer-${promptNum}`);
+      timerEl.style.display = 'inline';
+      let seconds = 0;
+      timerEl.textContent = '00:00';
+      recTimers[promptNum] = setInterval(() => {
+        seconds++;
+        const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+        const s = (seconds % 60).toString().padStart(2, '0');
+        timerEl.textContent = `${m}:${s}`;
+        if (seconds >= 90) recorder.stop();
+      }, 1000);
+
+      recorder.addEventListener('stop', () => clearInterval(recTimers[promptNum]), { once: true });
+
+    } catch (err) {
+      errEl.textContent = 'Microphone access is required for this section. Please allow microphone permissions and try again.';
+      errEl.style.display = 'block';
+    }
+  }
+
+  function updateSubmitButton() {
+    document.getElementById('btnSubmit').disabled = !(recordings[1] && recordings[2]);
+  }
+
+  function blobToBase64(blob) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result.split(',')[1]);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  }
+
+  function postWithProgress(url, bodyStr, onProgress) {
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', url);
+      xhr.setRequestHeader('Content-Type', 'text/plain;charset=utf-8');
+      xhr.upload.onprogress = (e) => {
+        if (e.lengthComputable && onProgress) onProgress(Math.round((e.loaded / e.total) * 100));
+      };
+      xhr.onload = () => {
+        try { resolve(JSON.parse(xhr.responseText)); }
+        catch (err) { reject(new Error('Unexpected response from server.')); }
+      };
+      xhr.onerror = () => reject(new Error('Network error — please check your connection.'));
+      xhr.send(bodyStr);
+    });
+  }
 
   async function submitExam() {
     const name = document.getElementById('sName').value.trim();
     const dept = document.getElementById('sDept').value.trim();
     const writing = document.getElementById('sWriting').value.trim();
 
-    if (!name || !dept) {
-      alert("Please enter your name and department.");
-      return;
-    }
+    if (!name || !dept) { alert('Please enter your name and department.'); goToStep(0); return; }
+    if (!recordings[1] || !recordings[2]) { alert('Please record both speaking answers before submitting.'); return; }
 
     const btn = document.getElementById('btnSubmit');
     btn.disabled = true;
-    btn.innerText = "Submitting Assessment...";
+    btn.textContent = 'Uploading recordings...';
 
-    // Collect raw selections — grading happens server-side.
     const answers = {};
     ANSWER_FIELDS.forEach(k => {
       const el = document.querySelector(`input[name="${k}"]:checked`);
       if (el) answers[k] = el.value;
     });
 
-    const payload = {
-      action: "STUDENT_SUBMIT",
-      fullName: name,
-      department: dept,
-      writingText: writing,
-      answers: answers
-    };
-
     try {
-      const res = await fetch(SCRIPT_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify(payload)
+      const [b64_1, b64_2] = await Promise.all([blobToBase64(recordings[1]), blobToBase64(recordings[2])]);
+
+      const payload = {
+        action: 'STUDENT_SUBMIT',
+        fullName: name,
+        department: dept,
+        writingText: writing,
+        answers: answers,
+        speakingAudio: {
+          prompt1: { mimeType: recordings[1].type, data: b64_1 },
+          prompt2: { mimeType: recordings[2].type, data: b64_2 }
+        }
+      };
+
+      const data = await postWithProgress(SCRIPT_URL, JSON.stringify(payload), (pct) => {
+        btn.textContent = `Uploading recordings... ${pct}%`;
       });
-      const data = await res.json();
 
-      if (data.status !== 'success') {
-        throw new Error(data.message || 'Submission was not accepted.');
-      }
+      if (data.status !== 'success') throw new Error(data.message || 'Submission was not accepted.');
 
-      document.getElementById('test-screen').style.display = 'none';
-      document.getElementById('success-screen').style.display = 'block';
+      goToStep(5);
     } catch (err) {
-      alert("Submission failed: " + err.message + "\nPlease check your internet connection and try again.");
+      alert('Submission failed: ' + err.message + '\nPlease check your internet connection and try again.');
       btn.disabled = false;
-      btn.innerText = "Submit Assessment";
+      btn.textContent = 'Submit Assessment';
     }
   }
 </script>
