@@ -199,7 +199,7 @@
 
   let candidates = [];
   let activeCandidate = null;
-  let examinerKey = sessionStorage.getItem('examinerKey') || '';
+  let examinerKey = '';
 
   // Per-skill, per-level focus areas — used to build targeted "areas for improvement"
   // for whichever skill(s) actually scored weakest, rather than one generic list per overall level.
@@ -304,7 +304,6 @@
   }
 
   function logout() {
-    sessionStorage.removeItem('examinerKey');
     examinerKey = '';
     document.getElementById('examinerPass').value = '';
     document.getElementById('dashboard').style.display = 'none';
@@ -314,7 +313,6 @@
   async function attemptLogin() {
     const ok = await loadSubmissions();
     if (ok) {
-      sessionStorage.setItem('examinerKey', examinerKey);
       document.getElementById('loginScreen').style.display = 'none';
       document.getElementById('dashboard').style.display = 'block';
     } else {
@@ -453,9 +451,6 @@
     }
   }
 
-  if (examinerKey) {
-    attemptLogin();
-  }
 </script>
 </body>
 </html>
