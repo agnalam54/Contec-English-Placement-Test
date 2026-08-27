@@ -28,12 +28,25 @@
 
 <div class="container">
 
+  <div id="loginScreen" class="card" style="max-width: 380px; margin: 60px auto;">
+    <h2 style="color: var(--primary); margin-bottom: 12px;">Examiner Login</h2>
+    <label><strong>Passphrase</strong></label>
+    <input type="password" id="examinerPass" placeholder="Enter examiner passphrase" style="width:100%; padding:10px; border:1px solid var(--border); border-radius:6px; margin-top:6px;" onkeydown="if(event.key==='Enter') login()">
+    <button class="btn" style="width:100%; margin-top:12px;" onclick="login()">Enter</button>
+    <p id="loginError" style="color:#dc2626; margin-top:8px; display:none;"></p>
+  </div>
+
+  <div id="dashboard" style="display:none;">
+
   <div class="card">
     <div class="header">
       <h2 style="color: var(--primary);">Examiner Evaluation Dashboard</h2>
-      <button class="btn" onclick="loadSubmissions()">🔄 Refresh Submissions</button>
+      <div style="display:flex; gap:8px;">
+        <button class="btn" onclick="loadSubmissions()">🔄 Refresh Submissions</button>
+        <button class="btn" style="background:#64748b;" onclick="logout()">Log out</button>
+      </div>
     </div>
-    
+
     <table>
       <thead>
         <tr>
@@ -98,6 +111,8 @@
     </div>
   </div>
 
+  </div>
+
 </div>
 
 <script>
@@ -105,6 +120,7 @@
 
   let candidates = [];
   let activeCandidate = null;
+  let examinerKey = sessionStorage.getItem('examinerKey') || '';
 
   const SYLLABUS = {
     'A1': ['Grammar: Present simple routines & basic pronouns', 'Speaking: Introductions & job roles', 'Listening: Simple factual workplace phrases'],
@@ -114,27 +130,66 @@
     'C1': ['Grammar: Syntactic inversion & advanced discourse markers', 'Speaking: High-stakes presentations & executive strategy', 'Reading: Critical regulatory & technical analysis']
   };
 
+  function login() {
+    examinerKey = document.getElementById('examinerPass').value.trim();
+    const errEl = document.getElementById('loginError');
+    errEl.style.display = 'none';
+
+    if (!examinerKey) {
+      errEl.innerText = 'Please enter the examiner passphrase.';
+      errEl.style.display = 'block';
+      return;
+    }
+
+    attemptLogin();
+  }
+
+  function logout() {
+    sessionStorage.removeItem('examinerKey');
+    examinerKey = '';
+    document.getElementById('examinerPass').value = '';
+    document.getElementById('dashboard').style.display = 'none';
+    document.getElementById('loginScreen').style.display = 'block';
+  }
+
+  async function attemptLogin() {
+    const ok = await loadSubmissions();
+    if (ok) {
+      sessionStorage.setItem('examinerKey', examinerKey);
+      document.getElementById('loginScreen').style.display = 'none';
+      document.getElementById('dashboard').style.display = 'block';
+    } else {
+      document.getElementById('loginError').innerText = 'Incorrect passphrase or connection error.';
+      document.getElementById('loginError').style.display = 'block';
+    }
+  }
+
   async function loadSubmissions() {
     const tbody = document.getElementById('candidateRows');
     tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;">Loading submissions...</td></tr>';
 
     try {
-      const res = await fetch(SCRIPT_URL, {
+      const res = await fetch(`${SCRIPT_URL}?key=${encodeURIComponent(examinerKey)}`, {
         method: "GET",
         redirect: "follow"
       });
-      
+
       if (!res.ok) {
         throw new Error(`HTTP status ${res.status}`);
       }
-      
+
       const data = await res.json();
+      if (data.status !== 'success') {
+        throw new Error(data.message || 'Unauthorized');
+      }
+
       candidates = data.records || [];
       renderTable();
+      return true;
     } catch (err) {
       console.error("Fetch Error:", err);
       tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; color:#dc2626;">Error connecting to Google Sheets: ${err.message}</td></tr>`;
-      alert("Connection Error: " + err.message + "\nCheck browser console for details.");
+      return false;
     }
   }
 
@@ -188,7 +243,8 @@
       action: "EXAMINER_GRADE",
       id: activeCandidate.id,
       writingScore: document.getElementById('evalWritingScore').value,
-      speakingScore: document.getElementById('evalSpeakingScore').value
+      speakingScore: document.getElementById('evalSpeakingScore').value,
+      examinerKey: examinerKey
     };
 
     try {
@@ -221,8 +277,10 @@
     }
   }
 
-  // Auto-load records upon opening
-  loadSubmissions();
+  // If a passphrase was saved this session, skip straight to the dashboard.
+  if (examinerKey) {
+    attemptLogin();
+  }
 </script>
 </body>
 </html>
