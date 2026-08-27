@@ -708,21 +708,21 @@
     });
   }
 
-  function postWithProgress(url, bodyStr, onProgress) {
-    return new Promise((resolve, reject) => {
-      const xhr = new XMLHttpRequest();
-      xhr.open('POST', url);
-      xhr.setRequestHeader('Content-Type', 'text/plain;charset=utf-8');
-      xhr.upload.onprogress = (e) => {
-        if (e.lengthComputable && onProgress) onProgress(Math.round((e.loaded / e.total) * 100));
-      };
-      xhr.onload = () => {
-        try { resolve(JSON.parse(xhr.responseText)); }
-        catch (err) { reject(new Error('Unexpected response from server.')); }
-      };
-      xhr.onerror = () => reject(new Error('Network error — please check your connection.'));
-      xhr.send(bodyStr);
+  // Plain fetch with no upload-progress listener on purpose: Google Apps Script Web Apps
+  // cannot answer a CORS preflight request, and attaching an xhr.upload.onprogress
+  // handler forces the browser to send one — which then gets rejected outright,
+  // surfacing as an opaque "network error" even though the backend is fine.
+  async function postJSON(url, bodyStr) {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: bodyStr
     });
+    try {
+      return await res.json();
+    } catch (err) {
+      throw new Error('Unexpected response from server.');
+    }
   }
 
   async function submitExam() {
@@ -735,7 +735,12 @@
 
     const btn = document.getElementById('btnSubmit');
     btn.disabled = true;
-    btn.textContent = 'Uploading recordings...';
+    let dots = 0;
+    const uploadingTimer = setInterval(() => {
+      dots = (dots + 1) % 4;
+      btn.textContent = 'Uploading recordings' + '.'.repeat(dots);
+    }, 400);
+    btn.textContent = 'Uploading recordings';
 
     const answers = {};
     ANSWER_FIELDS.forEach(k => {
@@ -758,14 +763,14 @@
         }
       };
 
-      const data = await postWithProgress(SCRIPT_URL, JSON.stringify(payload), (pct) => {
-        btn.textContent = `Uploading recordings... ${pct}%`;
-      });
+      const data = await postJSON(SCRIPT_URL, JSON.stringify(payload));
 
       if (data.status !== 'success') throw new Error(data.message || 'Submission was not accepted.');
 
+      clearInterval(uploadingTimer);
       goToStep(5);
     } catch (err) {
+      clearInterval(uploadingTimer);
       alert('Submission failed: ' + err.message + '\nPlease check your internet connection and try again.');
       btn.disabled = false;
       btn.textContent = 'Submit Assessment';
